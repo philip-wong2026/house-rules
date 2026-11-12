@@ -1,4 +1,4 @@
-"""Shared helpers for Space Open tools. Standard library only; Python 3.9+; macOS / Windows / Linux."""
+"""Shared helpers for HouseRules tools. Standard library only; Python 3.9+; macOS / Windows / Linux."""
 from __future__ import annotations
 
 import copy

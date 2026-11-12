@@ -189,7 +189,7 @@ class History(Tree):
 class CommandLine(Tree):
     def cli(self, *args, env=None):
         e = dict(os.environ)
-        e.pop("SPACE_OPEN_DENYLIST", None)
+        e.pop("HOUSE_RULES_DENYLIST", None)
         e.update(env or {})
         return subprocess.run([sys.executable, str(SCRIPT), "--root", str(self.root), *args],
                               capture_output=True, text=True, encoding="utf-8", env=e)
@@ -207,7 +207,7 @@ class CommandLine(Tree):
     def test_denylist_from_environment_variable(self):
         self.put("a.md", "mentions zebrapersonxyz here\n")
         self.deny.write_text("zebrapersonxyz\n", encoding="utf-8")
-        self.assertEqual(self.cli(env={"SPACE_OPEN_DENYLIST": str(self.deny)}).returncode, 1)
+        self.assertEqual(self.cli(env={"HOUSE_RULES_DENYLIST": str(self.deny)}).returncode, 1)
         self.assertEqual(self.cli().returncode, 0)
 
     def test_require_denylist_fails_without_one(self):

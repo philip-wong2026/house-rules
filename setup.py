@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Space Open installer. Standard library only; Python 3.9+; macOS / Windows / Linux.
+"""HouseRules installer. Standard library only; Python 3.9+; macOS / Windows / Linux.
 
 Non-interactive (the AI asks the user the questions, then calls this with the answers):
 

@@ -1,6 +1,6 @@
 # INSTALL.md — instructions for the AI
 
-You are an AI assistant. The user asked you to install Space Open on their computer. Follow these steps in order. Talk to the user in plain language, one question at a time, and do not skip the consent step. (Chinese version: [INSTALL.zh-CN.md](INSTALL.zh-CN.md); use it if the user speaks Chinese.)
+You are an AI assistant. The user asked you to install HouseRules on their computer. Follow these steps in order. Talk to the user in plain language, one question at a time, and do not skip the consent step. (Chinese version: [INSTALL.zh-CN.md](INSTALL.zh-CN.md); use it if the user speaks Chinese.)
 
 ## Step 0 - Get the files
 Download or clone this repository to a temporary folder you can read (for example the user's Downloads folder). You need `setup.py`, `tools/` and `templates/` side by side. Check that Python 3.9+ is available (`python3 --version`, on Windows `python --version`). If it is missing, tell the user how to install it and stop; do not install software that needs administrator rights yourself.
@@ -8,7 +8,7 @@ Download or clone this repository to a temporary folder you can read (for exampl
 ## Step 1 - Safety notice and consent
 Say this to the user in your own words and wait for a clear "yes":
 
-> Space Open creates folders and text files on your computer and may add hook settings for Claude Code. It does not upload anything. **Your computer and your data are your own responsibility**: keep your own backups, and do not put passwords or keys into these files. The tools reduce slips, they are not a security product. Do you agree to continue?
+> HouseRules creates folders and text files on your computer and may add hook settings for Claude Code. It does not upload anything. **Your computer and your data are your own responsibility**: keep your own backups, and do not put passwords or keys into these files. The tools reduce slips, they are not a security product. Do you agree to continue?
 
 If the user does not clearly agree, stop. Pass `--yes` to `setup.py` only after they agree.
 

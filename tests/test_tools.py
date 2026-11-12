@@ -422,7 +422,7 @@ class WriteGuardTests(SpaceCase):
         home = self.space.parent / "home"
         env = {"HOME": str(home), "USERPROFILE": str(home)}
         self.config(protected_paths=["private"])
-        allow = home / ".space-open" / "write-guard" / "allow.json"
+        allow = home / ".house-rules" / "write-guard" / "allow.json"
         allow.parent.mkdir(parents=True)
         soon = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=5)).isoformat()
         late = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=3)).isoformat()

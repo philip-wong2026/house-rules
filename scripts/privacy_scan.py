@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Privacy scan for the Space Open repository. Standard library only. Any hit = exit 1.
+"""Privacy scan for the HouseRules repository. Standard library only. Any hit = exit 1.
 
   python3 scripts/privacy_scan.py [--root DIR] [--denylist FILE] [--require-denylist] [--no-history] [--json]
 
@@ -7,7 +7,7 @@ What it scans (working tree file CONTENTS and file NAMES, plus git history when 
   1. the private denylist: one term per line; '#' comments; 're:<regex>' for a regex; ASCII terms
      match on word boundaries, terms with CJK characters match as substrings; case-insensitive.
      The list is NOT part of the repo. Its path comes from --denylist or the environment variable
-     SPACE_OPEN_DENYLIST. Without a list only the generic checks run (use --require-denylist to
+     HOUSE_RULES_DENYLIST. Without a list only the generic checks run (use --require-denylist to
      make a missing list an error).
   2. common secret formats (private keys, cloud/API tokens, bot tokens, JWTs, quoted password
      assignments).
@@ -26,7 +26,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ENV_VAR = "SPACE_OPEN_DENYLIST"
+ENV_VAR = "HOUSE_RULES_DENYLIST"
 MAX_BYTES = 5_000_000
 SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "node_modules"}
 

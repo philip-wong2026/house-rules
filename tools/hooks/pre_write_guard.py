@@ -15,7 +15,7 @@ Rules (paths come from .space/config.json):
   A8 no new .bak next to originals (use .space/backup.py)
   A9 deletions inside the Space go through .space/recycle.py
 
-Temporary allow (after the user agreed): ~/.space-open/write-guard/allow.json
+Temporary allow (after the user agreed): ~/.house-rules/write-guard/allow.json
   {"entries": [{"path": "private/x.md", "approved_by_user": "<their words>",
                 "expires_at": "2026-11-12T15:00:00+08:00"}]}   (at most 10 minutes ahead, with time zone)
 Works with Claude Code opened at the Space root; the hook command in .claude/settings.json uses a
@@ -39,7 +39,7 @@ import common  # noqa: E402
 import state_check  # noqa: E402
 
 ROOT = HERE.parents[1]
-ALLOW_FILE = Path.home() / ".space-open" / "write-guard" / "allow.json"
+ALLOW_FILE = Path.home() / ".house-rules" / "write-guard" / "allow.json"
 ALLOW_MAX = timedelta(minutes=10)
 FIXED_PROTECTED = [(".claude", "A7", "hook settings"), (".space/hooks", "A7", "hook scripts")]
 EDIT_TOOLS = ("Write", "Edit", "MultiEdit", "NotebookEdit")

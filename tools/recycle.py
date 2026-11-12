@@ -304,7 +304,7 @@ class Run:
 class Lock:
     def __init__(self, root):
         digest = hashlib.sha256(os.fsencode(str(root))).hexdigest()[:20]
-        self.path = Path(tempfile.gettempdir()) / f"space-open-recycle-{digest}.lock"
+        self.path = Path(tempfile.gettempdir()) / f"house-rules-recycle-{digest}.lock"
         self.fd = None
 
     def __enter__(self):

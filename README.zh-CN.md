@@ -1,10 +1,13 @@
-# Space Open
+# HouseRules｜家规
 
-**给你的 AI 助手一个共用的工作区：用带规则的普通文件，让每个 AI 会话都能接着上一个会话往下做。**
+**AI 总说「做完了」，其实没做。家规给你的 AI 团队立规矩，再配几个小机器，保证规矩真被执行。**
 
 [English](README.md) · 许可证：MIT · Python 3.9+ · 只用标准库 · macOS / Windows / Linux
 
-Space Open 是一套交接约定（总规则、基础卡、状态文件），加十个小工具（备份、回收站、状态检查、安全的共用写入、写入前检查等），由你和 AI 聊几句话就装好。不会上传任何东西，全部在你电脑上的一个文件夹里。
+## 为什么要它
+AI 助手记不住上一个会话干了什么，写好的规矩它跳过，没做完也说做完了。再多写规矩也没用，它照样不看。家规把规矩变成每次都会自动跑的小检查：改文件前先备份，删除改成进回收站，写文件前先检查能不能写，每个会话开工先读必读文件。
+
+家规（HouseRules）是一套交接约定（总规则、基础卡、状态文件），加十个小工具（备份、回收站、状态检查、安全的共用写入、写入前检查等），由你和 AI 聊几句话就装好。不会上传任何东西，全部在你电脑上的一个文件夹里。
 
 ## 作者自己怎么用
 作者的设备：一台常开的 Mac mini（跑定时任务、让手机能呼叫 AI 助手）、一台 MacBook 日常用、手机上的聊天软件（Telegram）用来和助手说话、一块外接硬盘放大文件。这些你一样都不需要就能开始。
@@ -55,11 +58,11 @@ python3 setup.py --check --target ~/Space
 ## 安全与实话
 - 你的电脑和数据安全由你自己负责。这些工具减少手滑，不是安全产品。
 - 钩子是减速带，不是访问控制；Bash 检查是启发式的。
-- Windows：代码避开了 macOS 专有命令，设计上能在 Windows 上跑，但只有 GitHub 自动试装（`.github/workflows/install-test.yml`）才算在 Windows 上验证过，作者本人没有亲手验过。
+- Windows：GitHub 自动试装已在 Windows（Python 3.9 和 3.12）上全部通过（2026-11-12）。Claude Code 的钩子在 Windows 上还没有人手动试过，见 [docs/WINDOWS-COMPATIBILITY.md](docs/WINDOWS-COMPATIBILITY.md)。
 - 密码和密钥不要写进这些文件。每次发布前都会跑隐私扫描（`scripts/privacy_scan.py`）。
 
 ## 开发
 ```sh
 python3 -m unittest discover -s tests -v
-python3 scripts/privacy_scan.py            # 通用检查；设置 SPACE_OPEN_DENYLIST 可加入你自己的词表
+python3 scripts/privacy_scan.py            # 通用检查；设置 HOUSE_RULES_DENYLIST 可加入你自己的词表
 ```

@@ -1,10 +1,13 @@
-# Space Open
+# HouseRules
 
-**Give your AI assistant a shared workspace: plain files with clear rules, so every AI session picks up where the last one stopped.**
+**Your AI says "done." It isn't. HouseRules gives your AI team house rules, plus small machines that make sure the rules are actually followed.**
 
 [中文说明](README.zh-CN.md) · License: MIT · Python 3.9+ · standard library only · macOS / Windows / Linux
 
-Space Open is a set of handoff conventions (master rules, a base card, state files) plus ten small, config-driven tools (backup, recycle bin, state check, safe shared writes, write guard and more), installed by a short conversation with your AI. Nothing is uploaded anywhere; it all lives in a folder on your computer.
+## Why
+AI assistants forget what the last session did, skip the rules you wrote, and report work as finished when it isn't. Writing more rules does not fix it: they skip those too. HouseRules turns the rules into small checks that run every time: a backup before every change, a recycle bin instead of delete, a check before any file is written, and a required-reading list every session starts from.
+
+HouseRules is a set of handoff conventions (master rules, a base card, state files) plus ten small, config-driven tools (backup, recycle bin, state check, safe shared writes, write guard and more), installed by a short conversation with your AI. Nothing is uploaded anywhere; it all lives in a folder on your computer.
 
 ## How the author uses it
 The author runs it on: a Mac mini that is always on (scheduled tasks, an AI assistant reachable from the phone), a MacBook for daily work, a phone chat app (Telegram) to talk to the assistants, and an external drive for large files. You do not need any of this to start.
@@ -55,11 +58,11 @@ python3 setup.py --check --target ~/Space
 ## Safety and honesty
 - Your computer and data safety is your own responsibility. The tools reduce slips; they are not a security product.
 - The hooks are speed bumps, not access control. The Bash check is a heuristic.
-- Windows: the code avoids macOS-only commands and is meant to run on Windows, but it is verified there only by the GitHub install test (`.github/workflows/install-test.yml`), not by the author's own hands.
+- Windows: tested by the GitHub install test on `windows-latest` with Python 3.9 and 3.12 (all passing, 2026-11-12). Claude Code hooks on Windows have not been tried by hand yet; see [docs/WINDOWS-COMPATIBILITY.md](docs/WINDOWS-COMPATIBILITY.md).
 - Passwords and keys do not belong in these files. The privacy scan (`scripts/privacy_scan.py`) is run before every release.
 
 ## Develop
 ```sh
 python3 -m unittest discover -s tests -v
-python3 scripts/privacy_scan.py            # generic checks; set SPACE_OPEN_DENYLIST for your own list
+python3 scripts/privacy_scan.py            # generic checks; set HOUSE_RULES_DENYLIST for your own list
 ```
