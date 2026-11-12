@@ -1,0 +1,63 @@
+name: install-test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  install:
+    name: install on ${{ matrix.os }} / python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Non-interactive install (English)
+        shell: bash
+        run: |
+          python setup.py --target "$RUNNER_TEMP/space-en" --name Alex --os "${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'mac' || 'linux') }}" \
+            --language en --always-on no --ai "Claude" --chat-channel none --modules work,personal \
+            --device "Laptop|daily computer" --sync-drive no --yes
+
+      - name: Non-interactive install (Chinese)
+        shell: bash
+        run: |
+          python setup.py --target "$RUNNER_TEMP/space-zh" --name 小明 --os "${{ runner.os == 'Windows' && 'windows' || (runner.os == 'macOS' && 'mac' || 'linux') }}" \
+            --language zh-CN --always-on no --ai "Claude" --chat-channel 暂无 --modules 工作,个人 \
+            --sync-drive no --yes
+
+      - name: Self-check the installed Spaces
+        shell: bash
+        run: |
+          python setup.py --check --target "$RUNNER_TEMP/space-en"
+          python setup.py --check --target "$RUNNER_TEMP/space-zh"
+
+      - name: Run the installed tools
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/space-en"
+          python .space/state_check.py
+          python .space/read_rules.py manifest
+          echo "note" > work/note.md
+          python .space/backup.py work/note.md
+          python .space/recycle.py work/note.md --reason "ci test" --who ci
+          test ! -e work/note.md
+          python .space/recycle.py --restore "$(find .space/recycle-bin -name note.md | head -1)"
+          test -f work/note.md
+
+      - name: Privacy scan (generic checks, no private denylist in CI)
+        run: python scripts/privacy_scan.py
