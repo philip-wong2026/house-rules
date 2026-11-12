@@ -17,11 +17,11 @@
 2. 用 Mac 还是 Windows？（`--os mac|windows|linux`）
 3. 有没有一台一直开着的电脑，或者云服务器？有／没有（`--always-on yes|no`）。「没有」完全可以，只影响以后的定时任务。
 4. 你用哪个 AI？（`--ai`）
-5. 想在哪里和助手说话：只在这里，还是也要手机聊天软件（Telegram、iMessage 等）？（`--chat-channel`）
+5. 想在哪里和助手说话：只在这里，还是也要手机聊天软件（Telegram、iMessage 等）？（`--chat-channel`，没有就传 `none`）
 6. 要管哪几块事？建议 `工作,个人`；文件夹名可以用中文（字母、数字、`-`、`_`，不能含斜杠）。（`--modules`，用逗号分隔）
-7. 这个文件夹放不放在同步盘里（iCloud、Dropbox、坚果云等）？（`--sync-drive yes|no`）
-8. 文件用中文还是英文？（`--language zh-CN|en`）
-可选：问他的设备，写成 `"名称|用途"`（`--device`，可重复）；问有没有想让写入检查保护的文件夹（`--protect`，相对文件夹名）。
+7. 放不放同步盘（`--sync-drive yes|no`）和文件语言（`--language zh-CN|en`）：**不要问**。看他选的文件夹路径（路径里有 iCloud、Dropbox、坚果云等就是 yes）和他说话用的语言自己判断，装完告诉他你的判断。
+8. **一定要问**：有没有不想让 AI 乱改的文件夹（比如放证件、账本、私人笔记的）？有就用 `--protect <相对文件夹名>`（可重复）。回答「没有」，就明确告诉他：「现在没有任何文件夹被写入检查保护，以后随时可以加。」
+可选：问他的设备，写成 `"名称|用途"`（`--device`，可重复）。
 
 还要定 Space 放哪：问用户，或者建议放在他主目录下的 `Space` 文件夹（`--target`）。不要挑一个已经放着重要文件的文件夹而不告诉他。
 
@@ -38,18 +38,20 @@ python3 setup.py --target "<文件夹>" --name "<称呼>" --os <mac|windows|linu
 
 出错就读错误信息、改参数再跑。不要为了让报错消失而手改已装好的工具。
 
+装完请**保留下载的仓库文件夹**：以后自检、升级都要在那里运行 `setup.py`。
+
 ## 第 4 步：自检
-运行 `python3 setup.py --check --target "<文件夹>"`。每一行都要是 `ok: true`。有失败就用大白话告诉用户。
+回到下载的仓库文件夹，运行 `python3 setup.py --check --target "<文件夹>"`。看最外层的 `"ok"`：`true` 才算通过；是 `false` 就把 `checks` 里 `ok: false` 的逐项用大白话告诉用户。`warnings`（比如还没做异地备份、没有受保护文件夹）不算失败，但要告诉用户。
 
 ## 第 5 步：异地备份
 打开新 Space 里的 `BACKUP.md`，带用户走一遍：至少选一个「丢了这台电脑也还在」的地方（放在别处的外接硬盘、另一个云账号、私有 git 远端、服务器快照）。让他做一次备份，从里面恢复一个文件并对比。对上了才把 `.space/config.json` 里的 `backup.status` 改成 `done`，把办法（不写密码）写进 `backup.method`。他现在不想做，就保持 `pending`，状态检查会继续提醒。
 
 ## 第 6 步：让 AI 客户端读到 Space
-- Claude Code：请用户**在 Space 根文件夹**打开 Claude Code，这样 `CLAUDE.md` 自动加载，`.claude/settings.json` 里的钩子才生效。（Windows 上的钩子要等项目的自动试装跑过才算验证；你在 Windows 上就如实说明。）
+- Claude Code：请用户在 **Space 根文件夹或它的一级文件夹**（比如 `工作/`）打开 Claude Code。钩子已装在这些地方，用的是完整路径；更深的子文件夹里打开不受保护。以后新建了一级文件夹、挪动了 Space、或升级了 Python，在 Space 里运行一次 `python3 .space/install_hooks.py` 刷新。（Windows 上已通过自动试装，但还没人在 Windows 的 Claude Code 里手动试过钩子；你在 Windows 上就如实说明。）
 - 其他客户端：请他把 `.space/project-three-rules.md` 里的「通用三条」放到项目说明最前面，保证基础卡会被读到。
 
 ## 第 7 步：新会话核对暗号
-告诉用户：在 Space 里开一个**新**会话，问「基础卡暗号是什么」。它应该答出第 3 步里的暗号。答不出，说明 `CLAUDE.md` 没被加载，先回头修第 6 步。然后给他看 `PRINCIPLES.md`（故意留空），请他准备好了再写自己的原则。
+告诉用户：在 Space 里开一个**新**会话，问「基础卡暗号是什么」。它应该答出第 3 步里的暗号。答不出，说明 `CLAUDE.md` 没被加载，先回头修第 6 步。再请用户让你**覆盖 `.claude/settings.json`**：这次应该被写入检查拦下。被拦才算装好；没被拦，就运行 `python3 .space/install_hooks.py`，重开会话再试。然后给他看 `PRINCIPLES.md`（故意留空），请他准备好了再写自己的原则。
 
 ## 不要做
 - 不要发送、上传或公开任何东西。

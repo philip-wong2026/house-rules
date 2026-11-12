@@ -29,6 +29,11 @@ M = {
     "readme": ("[Space reminder] \"Current status\" is over the limit: {names}. Reminder only; if this is the "
                "project's main session, move closed history out before finishing.",
                "[Space提醒] 项目“当前状态”超长：{names}。只提醒；是该项目主会话时，收工前把已闭合过程移入历史。"),
+    "noprotect": ("[Space reminder] No folder is registered as protected yet: the write guard only covers hook "
+                  "settings, .bak files and deletions. Ask the user whether a folder (IDs, accounts, private notes) "
+                  "should go into protected_paths in .space/config.json.",
+                  "[Space提醒] 还没有登记任何受保护文件夹：写入检查目前只管钩子设置、.bak 和删除。"
+                  "可以问用户有没有要保护的文件夹（证件、账本、私人笔记），加进 .space/config.json 的 protected_paths。"),
     "crashed": ("[Space turn check] the check script failed, run python3 .space/state_check.py by hand: {err}",
                 "[Space每轮检查] 检查脚本出错，须手动运行 python3 .space/state_check.py：{err}"),
 }
@@ -47,6 +52,8 @@ def notice(root, event=None):
     if over and (event or {}).get("hook_event_name") == "SessionStart":
         names = ", ".join(f"{r['file']} ({r['characters']})" for r in over)
         text += ("\n" if text else "") + common.tr(M, lang, "readme", names=names)
+    if (event or {}).get("hook_event_name") == "SessionStart" and not cfg.get("protected_paths"):
+        text += ("\n" if text else "") + common.tr(M, lang, "noprotect")
     return text
 
 

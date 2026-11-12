@@ -49,11 +49,11 @@ python3 setup.py --check --target ~/Space
 | `STATE.md`、`<模块>/STATE.md` | 状态文件（根导航，每事项一条当前状态） |
 | `BACKUP.md` | 异地备份方案和验证办法 |
 | `.space/*.py` | 十个工具，读取 `.space/config.json` |
-| `.space/hooks/` | 给 Claude Code 用的写入前检查和每轮检查（登记在 `.claude/settings.json`） |
+| `.space/hooks/` | 给 Claude Code 用的写入前检查和每轮检查，注册在根目录和每个一级文件夹的 `.claude/settings.json` 里（用 `python3 .space/install_hooks.py` 刷新） |
 | `.space/*.md` | 状态维护、项目说明的「通用三条」、十阶段 Agent 定制方法 |
 
 ## 十个工具
-`backup`（改之前先备份）· `recycle`（回收站代替删除）· `read_rules`（必读文件加校验）· `redact`（敏感词不进共用区）· `record_check`（项目有改动但状态没跟上）· `state_check`（大小、链接、冲突副本）· `shared_write`（比对后再写）· `date_copy_check`（关键日期只写一处）· `pre_write_guard`（钩子）· `turn_check`（钩子）
+`backup`（改之前先备份）· `recycle`（回收站代替删除）· `read_rules`（必读文件加校验）· `redact`（敏感词不进共用区）· `record_check`（项目有改动但状态没跟上）· `state_check`（大小、链接、冲突副本）· `shared_write`（比对后再写）· `date_copy_check`（关键日期只写一处）· `pre_write_guard`（钩子）· `turn_check`（钩子） · `install_hooks`（注册或刷新钩子）
 
 ## 安全与实话
 - 你的电脑和数据安全由你自己负责。这些工具减少手滑，不是安全产品。

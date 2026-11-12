@@ -49,11 +49,11 @@ python3 setup.py --check --target ~/Space
 | `STATE.md`, `<area>/STATE.md` | state files (root navigation, one current entry per matter) |
 | `BACKUP.md` | the off-site backup plan and how to verify it |
 | `.space/*.py` | the ten tools, reading `.space/config.json` |
-| `.space/hooks/` | a write guard and a per-turn check for Claude Code (registered in `.claude/settings.json`) |
+| `.space/hooks/` | a write guard and a per-turn check for Claude Code, registered in `.claude/settings.json` at the root and in every top-level folder (refresh with `python3 .space/install_hooks.py`) |
 | `.space/*.md` | state maintenance, "three general rules" for project descriptions, the ten-stage Agent customization method |
 
 ## The ten tools
-`backup` (copy before change) · `recycle` (recycle bin instead of delete) · `read_rules` (required files with checksums) · `redact` (keep sensitive words out of shared places) · `record_check` (project changed but status did not) · `state_check` (sizes, links, conflict copies) · `shared_write` (compare-and-swap writes) · `date_copy_check` (a key date written in one place only) · `pre_write_guard` (hook) · `turn_check` (hook)
+`backup` (copy before change) · `recycle` (recycle bin instead of delete) · `read_rules` (required files with checksums) · `redact` (keep sensitive words out of shared places) · `record_check` (project changed but status did not) · `state_check` (sizes, links, conflict copies) · `shared_write` (compare-and-swap writes) · `date_copy_check` (a key date written in one place only) · `pre_write_guard` (hook) · `turn_check` (hook) · `install_hooks` (register or refresh the hooks)
 
 ## Safety and honesty
 - Your computer and data safety is your own responsibility. The tools reduce slips; they are not a security product.

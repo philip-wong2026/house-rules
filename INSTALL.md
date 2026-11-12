@@ -17,11 +17,11 @@ If the user does not clearly agree, stop. Pass `--yes` to `setup.py` only after 
 2. Mac or Windows? (`--os mac|windows|linux`)
 3. Do you have a computer that stays on all the time, or a cloud server? yes/no (`--always-on yes|no`). "No" is fine; it only matters for scheduled tasks later.
 4. Which AI do you use with it? (`--ai`)
-5. Where do you want to talk to your assistant: only here, or also a phone chat app (Telegram, iMessage, ...)? (`--chat-channel`)
+5. Where do you want to talk to your assistant: only here, or also a phone chat app (Telegram, iMessage, ...)? (`--chat-channel`; pass `none` if there is none)
 6. Which areas should I manage? Suggest `work,personal`; folder names may be words in their language (letters, digits, `-`, `_`; no slashes). (`--modules`, comma separated)
-7. Do you keep this folder on a sync drive (iCloud, Dropbox, Nutstore, ...)? (`--sync-drive yes|no`)
-8. Which language for the files: English or Chinese? (`--language en|zh-CN`)
-Optional: ask for their devices as `"Name|use"` (`--device`, repeatable) and any folder they want the write guard to protect (`--protect`, relative folder name).
+7. Sync drive (`--sync-drive yes|no`) and file language (`--language en|zh-CN`): **do not ask**. Infer them from the folder path they chose (a path inside iCloud, Dropbox, Nutstore and the like means yes) and from the language they speak, and tell them what you inferred after the install.
+8. **Always ask**: is there a folder the AI must not change carelessly (IDs, accounts, private notes)? If so, add `--protect <relative folder>` (repeatable). If they say no, tell them plainly: "Right now no folder is protected by the write guard; you can add one any time."
+Optional: ask for their devices as `"Name|use"` (`--device`, repeatable).
 
 Also decide where the Space goes: ask the user, or propose a folder such as `Space` in their home directory (`--target`). Never choose a folder that already holds important files without telling them.
 
@@ -38,18 +38,20 @@ The command prints JSON: the list of created files, and the **passphrase** of th
 
 If it fails, read the error, fix the argument, and run again. Do not edit the installed tools by hand to make an error go away.
 
+**Keep the downloaded repo folder** after the install: later self-checks and upgrades run `setup.py` from there.
+
 ## Step 4 - Self-check
-Run `python3 setup.py --check --target "<folder>"`. Every line must be `ok: true`. Report any failure to the user in plain language.
+From the downloaded repo folder, run `python3 setup.py --check --target "<folder>"`. Look at the top-level `"ok"`: only `true` passes; if it is `false`, tell the user each item in `checks` with `ok: false` in plain language. `warnings` (for example no off-site backup yet, no protected folder) are not failures, but tell the user about them.
 
 ## Step 5 - Off-site backup
 Open `BACKUP.md` in the new Space and walk the user through it: choose at least one place that survives losing this computer (an external drive kept elsewhere, a second cloud account, a private git remote, a server snapshot). Have them make one backup, restore one file from it, and compare. Only then change `backup.status` in `.space/config.json` to `done` and write the method (no passwords) into `backup.method`. If they do not want to do it now, leave the status `pending`; the state check will keep reminding them.
 
 ## Step 6 - Make the AI client read the Space
-- Claude Code: tell the user to open Claude Code **at the Space root folder** so `CLAUDE.md` loads automatically and the hooks in `.claude/settings.json` take effect. (Hooks on Windows are unverified until the project's install test has run; say so if you are on Windows.)
+- Claude Code: tell the user to open Claude Code **at the Space root or in one of its top-level folders** (for example `work/`). The hooks are installed in those places with absolute paths; a session opened deeper than that is not guarded. After adding a top-level folder, moving the Space or upgrading Python, run `python3 .space/install_hooks.py` inside the Space to refresh them. (Windows passes the automated install test, but nobody has tried the hooks in Claude Code on Windows by hand yet; say so if you are on Windows.)
 - Other clients: tell them to put the three general rules from `.space/project-three-rules.md` at the top of the project instructions, so that the base card is read.
 
 ## Step 7 - Passphrase check in a new session
-Tell the user: open a **new** session in the Space and ask "what is the base-card passphrase?". It should answer with the passphrase from Step 3. If it cannot, `CLAUDE.md` is not being loaded: fix Step 6 first. Then show them `PRINCIPLES.md` (empty on purpose) and invite them to write their own principles when they are ready.
+Tell the user: open a **new** session in the Space and ask "what is the base-card passphrase?". It should answer with the passphrase from Step 3. If it cannot, `CLAUDE.md` is not being loaded: fix Step 6 first. Then ask the user to have you **overwrite `.claude/settings.json`**: the write guard must refuse it. Only a refusal means the install works; if it is not refused, run `python3 .space/install_hooks.py`, reopen the session and try again. Then show them `PRINCIPLES.md` (empty on purpose) and invite them to write their own principles when they are ready.
 
 ## Do not
 - Do not send, upload or publish anything.

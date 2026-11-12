@@ -18,8 +18,8 @@ Rules (paths come from .space/config.json):
 Temporary allow (after the user agreed): ~/.house-rules/write-guard/allow.json
   {"entries": [{"path": "private/x.md", "approved_by_user": "<their words>",
                 "expires_at": "2026-11-12T15:00:00+08:00"}]}   (at most 10 minutes ahead, with time zone)
-Works with Claude Code opened at the Space root; the hook command in .claude/settings.json uses a
-relative script path. Windows behaviour is unverified until the GitHub install test has run.
+Registered at the Space root and in every top-level folder with absolute paths (.space/install_hooks.py),
+so a session opened in a top-level folder is guarded too. Any .claude folder inside the Space counts as A7.
 """
 from __future__ import annotations
 
@@ -76,12 +76,14 @@ M = {
              "Bash命令疑似写入{why}（含“{marker}”）"),
     "recycle": ("clean up with: python3 .space/recycle.py <path> --reason ... --who claude",
                 "清理请用：python3 .space/recycle.py <路径> --reason ... --who claude"),
-    "refused": ("[Space guard {rule}] refused: {why}.\nIf this is a false alarm, use the Write/Edit tool (judged by exact "
-                "path). If a protected path really must change, get the user's consent first, then add an entry "
-                "(path, approved_by_user = their words, expires_at within 10 minutes, with time zone) to {allow} "
-                "and retry.",
-                "[Space写入前检查 {rule}] 已拒绝：{why}。\n如属误判，改用 Write/Edit 工具（按路径精确判断）；确需写入受保护范围，"
-                "先征得用户同意，再在 {allow} 登记 path、approved_by_user（用户原话）、expires_at（≤10分钟、带时区）后重试。"),
+    "refused": ("[Space guard {rule}] refused: {why}.", "[Space写入前检查 {rule}] 已拒绝：{why}。"),
+    "tail_bash": ("If this is a false alarm (the command only looks like a write), do it with the Write/Edit tool, "
+                  "which is judged by exact path.",
+                  "如属误判（命令只是看起来像写入），改用 Write/Edit 工具，按路径精确判断。"),
+    "tail_allow": ("If this path really must change, get the user's consent first, then add an entry (path, "
+                   "approved_by_user = their words, expires_at within 10 minutes, with time zone) to {allow} and retry.",
+                   "确需改这个路径：先征得用户同意，再在 {allow} 登记 path、approved_by_user（用户原话）、"
+                   "expires_at（≤10分钟、带时区）后重试。"),
     "crashed": ("[Space guard] script error, allowed: {err}", "[Space写入前检查] 脚本出错已放行：{err}"),
 }
 WHY = {
@@ -165,6 +167,8 @@ def check_path(root, target, cfg):
     for prefix, _, _ in FIXED_PROTECTED:
         if under(r, prefix):
             return "A7", _t(cfg, "protected", why=_why(cfg, "A7"), r=r)
+    if ".claude" in r.split("/"):
+        return "A7", _t(cfg, "protected", why=_why(cfg, "A7"), r=r)
     for prefix, rule in protected_list(cfg):
         rp = _rel(root, prefix)
         if rp and under(r, rp):
@@ -388,14 +392,20 @@ def main(root=ROOT):
     common.stdio_utf8()
     try:
         cfg = common.load_config(root)
-        hit = decide(root, json.loads(common.read_stdin_text()), cfg)
+        data = json.loads(common.read_stdin_text())
+        hit = decide(root, data, cfg)
     except Exception as exc:  # noqa: BLE001  fail open, with a note
         sys.stderr.write(common.tr(M, "en", "crashed", err=f"{type(exc).__name__}: {exc}") + "\n")
         return 1
     if hit is None:
         return 0
     rule, why = hit
-    sys.stderr.write(_t(cfg, "refused", rule=rule, why=why, allow=ALLOW_FILE) + "\n")
+    lines = [_t(cfg, "refused", rule=rule, why=why)]
+    if data.get("tool_name") == "Bash" and rule not in ("A8", "A9"):
+        lines.append(_t(cfg, "tail_bash"))
+    if rule in ("A4", "A6", "A7"):
+        lines.append(_t(cfg, "tail_allow", allow=ALLOW_FILE))
+    sys.stderr.write("\n".join(lines) + "\n")
     return 2
 
 

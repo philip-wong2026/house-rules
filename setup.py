@@ -27,6 +27,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "tools"))
 import backup as backup_mod  # noqa: E402
 import common  # noqa: E402
+import install_hooks  # noqa: E402
 
 VERSION = "0.1.0"
 RESERVED = {".space", ".claude", ".git", "templates", "tools"}
@@ -48,10 +49,18 @@ M = {
     "no_target": ("target path is not usable: {why}", "目标路径不可用：{why}"),
     "created": ("created", "新建"), "skipped": ("skipped (exists)", "跳过（已存在）"),
     "replaced": ("replaced (old copy backed up)", "已替换（旧版已备份）"),
-    "merged": ("merged", "已合并"), "bad_json": ("not valid JSON, left untouched", "不是有效 JSON，未改动"),
+    "merged": ("merged", "已合并"), "unchanged": ("unchanged", "未变"), "bad_json": ("not valid JSON, left untouched", "不是有效 JSON，未改动"),
     "left": ("unfilled placeholder in {f}: {p}", "{f} 里有未替换的占位符：{p}"),
-    "done": ("Installed. Passphrase: {p}. Next: open your AI client at {t} and run: {py} setup.py --check --target \"{t}\"",
-             "安装完成。暗号：{p}。下一步：在 {t} 打开你的 AI 客户端，并运行：{py} setup.py --check --target \"{t}\""),
+    "done": ("Installed. Passphrase: {p}. Next: (1) self-check, run from the downloaded repo folder (keep that "
+             "folder for later checks and upgrades): {py} setup.py --check --target \"{t}\"  (2) open Claude Code "
+             "at {t} or one of its top-level folders and ask it for the passphrase.",
+             "安装完成。暗号：{p}。下一步：①自检——回到下载的仓库文件夹运行（这个文件夹请保留，以后自检、升级还要用）："
+             "{py} setup.py --check --target \"{t}\"；②在 {t} 或它的一级文件夹打开 Claude Code，问它暗号。"),
+    "w_backup": ("off-site backup not confirmed yet (backup.status = pending); see BACKUP.md",
+                 "异地备份还没确认（backup.status = pending）；见 BACKUP.md"),
+    "w_protect": ("no protected folder registered: the write guard only covers hook settings, .bak files and "
+                  "deletions; add folders to protected_paths in .space/config.json if needed",
+                  "还没登记任何受保护文件夹：写入检查只管钩子设置、.bak 和删除；需要的话加进 .space/config.json 的 protected_paths"),
 }
 
 
@@ -70,10 +79,10 @@ def render(text, values):
 def module_table(modules, lang):
     if lang == "zh-CN":
         rows = ["| 模块 | 文件夹 | 默认写入方 |", "|---|---|---|"]
-        rows += [f"| {m} | `{m}/` | {{{{user}}}} 在该文件夹里打开的会话 |" for m in modules]
+        rows += [f"| {m} | `{m}/` | {{{{user}}}} 为这个模块开的会话（在 Space 根目录或 `{m}/` 里打开都行） |" for m in modules]
     else:
         rows = ["| Module | Folder | Default write owner |", "|---|---|---|"]
-        rows += [f"| {m} | `{m}/` | the session {{{{user}}}} opens in that folder |" for m in modules]
+        rows += [f"| {m} | `{m}/` | the session {{{{user}}}} opens for this module (at the Space root or in `{m}/`) |" for m in modules]
     return "\n".join(rows)
 
 
@@ -114,40 +123,10 @@ class Writer:
         return True
 
 
-def hook_commands(python_cmd):
-    py = python_cmd.replace("\\", "/")
-    quoted = f'"{py}"' if " " in py or ":" in py else py
-    return {name: f"{quoted} .space/hooks/{name}" for name in HOOK_FILES}
-
-
 def merge_settings(target, lang, python_cmd, report):
-    path = target / ".claude" / "settings.json"
-    data = {}
-    if path.exists():
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            if not isinstance(data, dict):
-                raise ValueError("not an object")
-        except (ValueError, OSError):
-            report.append({"file": ".claude/settings.json", "result": t(lang, "bad_json")})
-            return
-        backup_mod.backup(path, target, common.now_local())
-    cmds = hook_commands(python_cmd)
-    wanted = {
-        "PreToolUse": ({"matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash"}, cmds["pre_write_guard.py"]),
-        "SessionStart": ({}, cmds["turn_check.py"]),
-        "UserPromptSubmit": ({}, cmds["turn_check.py"]),
-    }
-    hooks = data.setdefault("hooks", {})
-    for event, (extra, command) in wanted.items():
-        groups = hooks.setdefault(event, [])
-        script = command.rsplit("/", 1)[-1]
-        if any(script in h.get("command", "") for g in groups for h in g.get("hooks", [])):
-            continue
-        groups.append({**extra, "hooks": [{"type": "command", "command": command}]})
-    existed = path.exists()
-    common.write_text(path, json.dumps(data, ensure_ascii=False, indent=2) + "\n")
-    report.append({"file": ".claude/settings.json", "result": t(lang, "merged" if existed else "created")})
+    """Hooks go to the root and every top-level folder, with absolute paths (see tools/install_hooks.py)."""
+    for item in install_hooks.install(target, python_cmd):
+        report.append({"file": item["file"], "result": t(lang, item["result"])})
 
 
 def install(args):
@@ -260,17 +239,17 @@ def check(args):
     tc = run_tool(target, ".space/hooks/turn_check.py", stdin=json.dumps({"hook_event_name": "UserPromptSubmit"}))
     record("turn_check runs", tc.returncode == 0, tc.stderr[-200:])
 
-    sp = target / ".claude" / "settings.json"
-    hooks_ok = False
-    if sp.is_file():
-        try:
-            blob = json.dumps(json.loads(sp.read_text(encoding="utf-8")).get("hooks", {}))
-            hooks_ok = all(n in blob for n in HOOK_FILES)
-        except ValueError:
-            pass
-    record("Claude Code hooks registered", hooks_ok or args.no_hooks)
+    left = install_hooks.missing(target)
+    record("Claude Code hooks registered (root and every top-level folder)", args.no_hooks or not left,
+           "" if not left else "missing: " + ", ".join(left) + " -> python3 .space/install_hooks.py")
+    lang = cfg.get("language", "en")
+    warnings = []
+    if cfg.get("backup", {}).get("status") != "done":
+        warnings.append(t(lang, "w_backup"))
+    if not cfg.get("protected_paths"):
+        warnings.append(t(lang, "w_protect"))
     ok = all(r["ok"] for r in results)
-    print(json.dumps({"ok": ok, "checks": results}, ensure_ascii=False, indent=2))
+    print(json.dumps({"ok": ok, "warnings": warnings, "checks": results}, ensure_ascii=False, indent=2))
     return 0 if ok else 1
 
 

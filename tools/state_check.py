@@ -61,6 +61,10 @@ M = {
     "readme_over": ("{file}: \"Current status\" is {n} characters, over {limit}; the project session should move "
                     "closed history out", "{file}“当前状态”{n}字，超过{limit}上限；由项目会话整理"),
     "readme_80": ("{file}: \"Current status\" at 80% of the limit", "{file}“当前状态”{n}字，达到80%"),
+    "hooks_missing": ("Claude Code hooks are missing in: {names} (a session opened there is not guarded); "
+                      "run python3 .space/install_hooks.py",
+                      "这些文件夹没装 Claude Code 钩子：{names}（在那里打开的会话不受写入检查保护）；"
+                      "运行 python3 .space/install_hooks.py"),
     "backup_pending": ("Offsite backup is not confirmed yet (config backup.status = pending); see BACKUP.md",
                        "异地备份尚未确认（config 中 backup.status = pending）；见 BACKUP.md"),
     "dates": ("{n} key date(s) copied outside their source: {names}", "{n}处在正本以外抄写了关键日期：{names}"),
@@ -247,6 +251,14 @@ def check(root=ROOT):
         warnings.append(t("registered_gone", name=name))
     if cfg.get("backup", {}).get("status") != "done":
         warnings.append(t("backup_pending"))
+    if (Path(root) / ".claude").is_dir():
+        try:
+            import install_hooks
+            left = install_hooks.missing(root)
+            if left:
+                warnings.append(t("hooks_missing", names=", ".join(left)))
+        except Exception as exc:  # noqa: BLE001
+            warnings.append(t("tool_failed", tool="install_hooks", why=exc))
     try:
         import date_copy_check
         hits = date_copy_check.scan(root)

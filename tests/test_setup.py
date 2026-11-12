@@ -64,12 +64,14 @@ class InstallEnglish(SpaceCase):
         self.assertEqual(cfg["backup"]["status"], "pending")
         self.assertIn("work/STATE.md", cfg["shared_files"])
 
-    def test_hooks_registered_with_relative_scripts(self):
-        data = json.loads((self.space / ".claude" / "settings.json").read_text(encoding="utf-8"))
-        blob = json.dumps(data)
-        self.assertIn(".space/hooks/pre_write_guard.py", blob)
-        self.assertIn(".space/hooks/turn_check.py", blob)
-        self.assertEqual(set(data["hooks"]), {"PreToolUse", "SessionStart", "UserPromptSubmit"})
+    def test_hooks_registered_with_absolute_scripts_in_root_and_modules(self):
+        for folder in ["", "work/", "personal/"]:
+            data = json.loads((self.space / f"{folder}.claude" / "settings.json").read_text(encoding="utf-8"))
+            blob = json.dumps(data, ensure_ascii=False)
+            hooks_dir = str(self.space / ".space" / "hooks").replace("\\", "/")
+            self.assertIn(hooks_dir + "/pre_write_guard.py", blob.replace("\\\\", "/"), folder)
+            self.assertIn(hooks_dir + "/turn_check.py", blob.replace("\\\\", "/"), folder)
+            self.assertEqual(set(data["hooks"]), {"PreToolUse", "SessionStart", "UserPromptSubmit"})
 
     def test_self_check_passes(self):
         out = io.StringIO()
