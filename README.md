@@ -28,7 +28,7 @@ Python 3.9 or newer must be on the computer (the installer and the tools are pla
 ## Install (by talking to your AI)
 Open your AI client and say:
 
-> Read `<link to this repo>/INSTALL.md` and install it for me.
+> Read https://github.com/philip-wong2026/house-rules and install it for me by following its INSTALL.md.
 
 The AI will state the safety notice and ask for your consent, ask a few questions (what to call you, Mac or Windows, always-on computer or not, which AI, where you talk to it, which areas of life/work to manage), call `setup.py`, help you set up the off-site backup, and finally ask you to open a new session and check the passphrase. See [INSTALL.md](INSTALL.md).
 

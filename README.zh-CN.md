@@ -28,7 +28,7 @@ AI 助手记不住上一个会话干了什么，写好的规矩它跳过，没�
 ## 安装（和你的 AI 聊几句）
 打开你的 AI 客户端，说：
 
-> 读 `<本仓库链接>/INSTALL.md`，帮我装上。
+> 读 https://github.com/philip-wong2026/house-rules ，照里面的 INSTALL.zh-CN.md 帮我装上。
 
 AI 会先说明安全声明并征得你的同意，再问几个问题（怎么称呼你、Mac 还是 Windows、有没有常开电脑、用哪个 AI、在哪里和它说话、要管哪几块事），然后调用 `setup.py`，带你设置异地备份，最后请你开一个新会话，核对暗号。详见 [INSTALL.zh-CN.md](INSTALL.zh-CN.md)。
 
